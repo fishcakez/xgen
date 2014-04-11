@@ -36,6 +36,15 @@ defmodule Agent.Server do
     super(msg, state)
   end
 
+  def code_change(_oldvsn, state, extra) do
+    case Keyword.get(extra, :agent) do
+      { mod, fun, args } ->
+        { :ok, Kernel.apply(mod, fun, [state | args]) }
+      nil ->
+        { :ok, state }
+    end
+  end
+
   def terminate(_reason, _state) do
     # There is a race condition if the agent is
     # restarted too fast and it is registered.
